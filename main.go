@@ -1,16 +1,26 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"net/http"
-	"coredemo/framework"
+	"time"
 )
 
+const shortDuration = 1 * time.Microsecond
+
 func main() {
-	server := &http.Server{
-		// 自定义的请求处理函数
-		Handler: framework.NewCore(),
-		// 监听地址
-		Addr:    ":8080",
+	d := time.Now().Add(shortDuration)
+
+	ctx, cancel := context.WithDeadline(context.Background(), d)
+	defer cancel()
+
+	select {
+	case <-time.After(1 * time.Second):
+		fmt.Println("overslept")
+	case <-ctx.Done():
+		fmt.Println(ctx.Err())
 	}
-	server.ListenAndServe()
+
+	http.ListenAndServe()
 }
